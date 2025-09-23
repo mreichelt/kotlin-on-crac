@@ -91,3 +91,52 @@ To make it work with Spring Boot, just add the dependency [org.crac:crac](https:
 ```
 
 Bonus tip: extract the [Spring Boot JAR as described in the docs](https://docs.spring.io/spring-boot/reference/packaging/efficient.html). It's not strictly necessary for CRaC, but this deployment is more efficient by default, and leads to much better results when using AOTCache or CDS. You'll thank me later!
+
+### AOTCache
+
+In contrast to CRaC, the AOTCache works on all platforms. JDK 24 introduced JEP 483 (Ahead-of-Time Class Loading & Linking), and the brand new JDK 25 introduced JEP 515 (Ahead-of-Time Method Profiling). The newer the JDK, the larger the AOTCache improvements will be!
+
+Start your training run like this:
+
+```console
+java -XX:AOTMode=record -XX:AOTConfiguration=app.aotconf -jar app.jar
+```
+
+This will create the file `app.aotconf` with information about your training run. I recommend running this on JDK 24 for curiosity, because here it contains just text, so you can have a peek inside. In JDK 25 the content is binary, to also include the method profiling info. Example for a Spring Boot app on JDK 24:
+
+```plain
+… thousands of lines …
+org/springframework/core/io/support/SpringFactoriesLoader$FactoryInstantiator id: 1336
+org/springframework/core/KotlinDetector id: 1337
+kotlin/Metadata id: 1338
+kotlin/jvm/JvmInline id: 1339
+kotlin/reflect/full/KClasses id: 1340
+java/lang/Class$AnnotationData id: 1341
+…
+```
+
+In a second step we will create the actual AOTCache. This will not run the app, but collect all data from the classpath based on the `app.aotconf` data from the training run:
+
+```console
+java -XX:AOTMode=create -XX:AOTConfiguration=app.aotconf -XX:AOTCache=app.aot -jar app.jar
+```
+
+Finally, to run the application using the new AOTCache:
+
+```console
+java -XX:AOTCache=app.aot -jar app.jar
+```
+
+In my tests with the spring-petclinic-kotlin project, I got a startup performance improvement of 43% with JDK 24, and 50% improvement with JDK 25. Nice!
+
+Bonus tip: In case something goes wrong, the JVM will just reject the AOTCache and continue with a cold start. That's good for production, because it'll just work, but is not helpful if what you're testing is the actual AOTCache. Just add the `-XX:AOTMode=on` parameter, and the JVM will halt if it could not use the AOTCache:
+
+```console
+java -XX:AOTMode=on -XX:AOTCache=app.aot -jar app.jar
+```
+
+This was especially helpful in my tests with a changing classpath, because the AOTCache will not work if the classpath is changed too much.
+
+#### AOTCache with Spring Boot
+
+For using the AOTCache with Spring Boot, it's important to [extract the Spring Boot JAR](https://docs.spring.io/spring-boot/reference/packaging/efficient.html) first. Otherwise many classes will not make it into the AOTCache, and your startup performance will not improve much. Thanks to [Sébastien Deleuze](https://seb.deleuze.fr/) for the tip! Check out [these docs](https://docs.spring.io/spring-boot/reference/packaging/class-data-sharing.html#packaging.class-data-sharing.aot-cache) as well.
