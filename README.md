@@ -140,3 +140,22 @@ This was especially helpful in my tests with a changing classpath, because the A
 #### AOTCache with Spring Boot
 
 For using the AOTCache with Spring Boot, it's important to [extract the Spring Boot JAR](https://docs.spring.io/spring-boot/reference/packaging/efficient.html) first. Otherwise many classes will not make it into the AOTCache, and your startup performance will not improve much. Thanks to [Sébastien Deleuze](https://seb.deleuze.fr/) for the tip! Check out [these docs](https://docs.spring.io/spring-boot/reference/packaging/class-data-sharing.html#packaging.class-data-sharing.aot-cache) as well, and the [example-spring-boot](https://github.com/CRaC/example-spring-boot) repo.
+
+### Measure backend startup
+
+In order to measure the time until the first backend call succeeds, use [measure_petclinic.sh](measure_petclinic.sh) with the Java arguments you want to run. This will:
+
+1. Launch a JVM with your provided Java args
+2. Continuosly call [http://localhost:8080/owners?lastName=](http://localhost:8080/owners?lastName=) with `curl` until it returns 200 (yep, it's hard-coded)
+3. Print the time it took until the first successful call is done
+4. Kill the JVM
+
+For example, this is how to measure the same app without, and then with an AOTCache:
+
+```console
+$ ./measure_petclinic.sh -jar app.jar
+Backend ready in 2469 ms
+
+$ ./measure_petclinic.sh -XX:AOTCache=app.aot -XX:AOTMode=on -jar app.jar
+Backend ready in 1412 ms
+```
