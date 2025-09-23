@@ -37,7 +37,7 @@ With this we started the training phase. We'll warm up the application until it 
 
 For a backend application, this could mean triggering HTTP calls until we've reached a desired performance.
 
-Now, in a second shell, let's tell CRaC to create the checkpoint:
+Now, in a second shell, let's tell CRaC to create the checkpoint (tip: run `jcmd` to see all running JVM apps if you're unsure):
 
 ```console
 jcmd path/to/app.jar JDK.checkpoint
@@ -69,8 +69,25 @@ docker run --privileged --rm -it --name crac --volume .:/app -p 8080:8080 --entr
 cd /app
 ```
 
-Finally, you can start one (or more) session into the same container. In this second shell, you'll be able to run the `jcmd … JDK.checkpoint` command mentioned above:
+Finally, you can start a session (or more) into the same container. In this second shell, you'll be able to run the `jcmd … JDK.checkpoint` command mentioned above:
 
 ```console
 docker exec -it -u root crac /bin/bash
 ```
+
+#### Configure your app for CRaC
+
+The checkpoint and restore are coordinated. In order to create a checkpoint, all open files and network connections have to be closed, or otherwise the JVM will throw an exception when attempting to create the checkpoint.
+
+To do this, you can add the [org.crac:crac](https://mvnrepository.com/artifact/org.crac/crac) dependency, and implement the [Resource](https://javadoc.io/doc/org.crac/crac/latest/index.html) interface, using `beforeCheckpoint` to get notified when the checkpoint is triggered, and `afterRestore` to get notified when the restore is triggered. Finally, you can call `Core.getGlobalContext().register(YourResource())` to make CRaC aware of your Resource. I highly recommend the talk [Java on CRaC by Simon Ritter](https://youtu.be/bWmuqh6wHgE?si=v7Cd1_hb0jMbhW_k&t=2190) that explains this nicely.
+
+##### CRaC with Spring Boot
+
+Multiple backend frameworks already support CRaC out of the box, so there's no need to implement a `Resource` yourself.
+To make it work with Spring Boot, just add the dependency [org.crac:crac](https://mvnrepository.com/artifact/org.crac/crac) to your application. I had good results by using the [spring-petclinic-kotlin](https://github.com/spring-petclinic/spring-petclinic-kotlin) sample project, adding `implementation("org.crac:crac")` as a dependency and by upgrading the Gradle wrapper to 8.14.x (for JDK 24 support) by running this command twice:
+
+```console
+./gradlew wrapper --gradle-version 8.14.3 --distribution-type bin
+```
+
+Bonus tip: extract the [Spring Boot JAR as described in the docs](https://docs.spring.io/spring-boot/reference/packaging/efficient.html). It's not strictly necessary for CRaC, but this deployment is more efficient by default, and leads to much better results when using AOTCache or CDS. You'll thank me later!
