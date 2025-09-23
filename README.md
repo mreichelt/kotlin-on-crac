@@ -137,6 +137,16 @@ java -XX:AOTMode=on -XX:AOTCache=app.aot -jar app.jar
 
 This was especially helpful in my tests with a changing classpath, because the AOTCache will not work if the classpath is changed too much.
 
+#### AOTCache, simplified
+
+JDK 25 also introduces [JEP 514](https://openjdk.org/jeps/514), which will simplify the two-step process into a single-step invocation. No more need for a temporary `app.aotconf` file, just run:
+
+```console
+java -XX:AOTCacheOutput=app.aot -jar app.jar
+```
+
+The classic way (first create, then record) still works, and can be helpful in my opinion to understand the process. Especially when running on JDK 24, I found it very helpful to inspect the `app.aotconf` text file!
+
 #### AOTCache with Spring Boot
 
 For using the AOTCache with Spring Boot, it's important to [extract the Spring Boot JAR](https://docs.spring.io/spring-boot/reference/packaging/efficient.html) first. Otherwise many classes will not make it into the AOTCache, and your startup performance will not improve much. Thanks to [Sébastien Deleuze](https://seb.deleuze.fr/) for the tip! Check out [these docs](https://docs.spring.io/spring-boot/reference/packaging/class-data-sharing.html#packaging.class-data-sharing.aot-cache) as well, and the [example-spring-boot](https://github.com/CRaC/example-spring-boot) repo.
