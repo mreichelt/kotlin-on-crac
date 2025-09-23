@@ -1,0 +1,13 @@
+FROM ubuntu:24.04
+
+ENV JAVA_HOME=/opt/jdk
+ENV PATH=$JAVA_HOME/bin:$PATH
+
+RUN apt-get update -y
+
+ADD "https://cdn.azul.com/zulu/bin/zulu24.30.15-ca-crac-jdk24.0.1-linux_aarch64.tar.gz" $JAVA_HOME/jdk.tar.gz
+RUN tar --extract --file $JAVA_HOME/jdk.tar.gz --directory "$JAVA_HOME" --strip-components 1; rm $JAVA_HOME/jdk.tar.gz;
+
+RUN apt-get install curl siege -y
+
+RUN mkdir -p /opt/crac-files
