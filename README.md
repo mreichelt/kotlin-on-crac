@@ -3,7 +3,7 @@
 Talk for [Droidcon Berlin 2025](https://berlin.droidcon.com/speakers/marc-reichelt).
 
 - Slides: [Keynote](Kotlin%20on%20CRaC.key), [PDF](Kotlin%20on%20CRaC.pdf)
-- Video recording: will be available shortly
+- [Video recording](https://www.youtube.com/watch?v=paoAmiltFKU)
 
 ## Talk Description
 
