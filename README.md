@@ -5,6 +5,8 @@ Talk for [Droidcon Berlin 2025](https://berlin.droidcon.com/speakers/marc-reiche
 - Slides: [Keynote](Kotlin%20on%20CRaC.key), [PDF](Kotlin%20on%20CRaC.pdf)
 - [Video recording](https://www.youtube.com/watch?v=paoAmiltFKU)
 
+[<img src="droidcon_talk_thumbnail.jpg" width="512" alt="Kotlin on CRaC – new JVM features to speed things up"/>](https://www.youtube.com/watch?v=paoAmiltFKU)
+
 ## Talk Description
 
 What if we could drastically improve the JVM startup time? What if we could start a Kotlin-powered backend in milliseconds?
